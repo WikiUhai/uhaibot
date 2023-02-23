@@ -2,8 +2,6 @@
 
 toolforge-jobs flush
 
-git pull
-
 rm -fdr pwbvenv
 
 python3 -m venv pwbvenv
