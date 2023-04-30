@@ -12,11 +12,11 @@ site = pwb.Site('en', 'wikipedia')
 page = pwb.Page(site, 'User:Uhai/Pages_without_short_descriptions_by_view_count')
 
 table = re.findall(table_pattern, page.text)[0][0]
-entries = re.findall(item_pattern, table)
+list_entries = re.findall(item_pattern, table)
 
-if len(entries) > 0:
-    in_subst = ', '.join(list(map(lambda x: '%s', entries)))
-    query = "SELECT p.page_title FROM page p WHERE p.page_namespace = 0 AND (p.page_is_redirect = 1 OR p.page_id IN (SELECT cl.cl_from FROM categorylinks cl WHERE cl.cl_to = 'Articles_with_short_description')) AND p.page_title IN (%s);" % in_subst
+if len(list_entries) > 0:
+    in_subst = ', '.join(list(map(lambda x: '%s', list_entries)))
+    query = "SELECT p.page_title, CASE WHEN p.page_id IN (SELECT cl.cl_from FROM categorylinks cl WHERE cl.cl_to = 'Articles_with_short_description') OR p.page_is_redirect THEN 1 ELSE 0 END FROM page p WHERE p.page_namespace = 0 AND p.page_title IN (%s);" % in_subst
 
     conn = pymysql.connect(
         host=host,
@@ -24,20 +24,28 @@ if len(entries) > 0:
         database="enwiki_p"
     )
 
-    with_sd = []
+    all_articles = []
+    to_remove = []
 
     with conn.cursor() as cur:
-        cur.execute(query, args=entries)
+        cur.execute(query, args=list_entries)
         data = cur.fetchall()
 
         for row in data:
-            with_sd.append(str(row[0], encoding='utf-8'))
+            all_articles.append(str(row[0], encoding='utf-8'))
+
+            if int(row[1]) == 1:
+                to_remove.append(str(row[0], encoding='utf-8'))
 
     conn.close()
 
-    if len(with_sd) > 0:
-        for entry in with_sd:
+    for entry in list_entries:
+        if entry not in all_articles:
+            to_remove.append(entry)
+
+    if len(to_remove) > 0:
+        for entry in to_remove:
             delete_pattern = rf'\| \[\[{re.escape(entry)}\]\] \|\| [0-9]+\n\|-\n'
             page.text = re.sub(delete_pattern, '', page.text)
 
-        page.save('Removed ' + str(len(with_sd)) + ' article' + ('s' if len(with_sd) > 1 else '') + ' with short description added (bot)')
+        page.save('Removed ' + str(len(to_remove)) + ' completed or deleted article' + ('s' if len(to_remove) > 1 else '') + ' (bot)')
