@@ -68,7 +68,7 @@ def update_page(list):
     page.text = TO_DATE_PATTERN.sub(lambda m: str(int(m.group(0)) + (LIST_NUMBER - len(list_entries))), page.text)
 
     # Add new entries in place of old ones in table
-    new_list = '\n|-\n'.join(map(lambda vals: f'| [[{vals[0]}]] || {vals[1]}', list.items()))
+    new_list = '\n'.join(map(lambda vals: f'| [[{vals[0]}]] || {vals[1]}\n|-', list.items()))
     page.text = TABLE_PATTERN.sub(new_list, page.text)
 
     page.save('Add data for ' + month + ' ' + year + ' (bot)')
