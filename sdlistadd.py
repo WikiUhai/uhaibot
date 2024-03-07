@@ -7,7 +7,7 @@ from viewcountreader import ViewCountReader
 LIST_NUMBER = 3000
 TO_DATE_PATTERN = re.compile(r'(?<=\{\{#EXPR:)[0-9]+(?=\+)')
 HEADER_PATTERN = re.compile(r'(?<=\=\= ).*?(?= \=\=)')
-TABLE_PATTERN = re.compile(r'(?<=\{\| class\=\"wikitable sortable\" id\=\"pages\"\n! Article !! View count\n\|-\n).*?(?=\n\|\})', re.DOTALL)
+TABLE_PATTERN = re.compile(r'(?<=\{\| class\=\"wikitable sortable\" id\=\"pages\"\n! Article !! View count\n\|-\n).*?(?=\|\})', re.DOTALL)
 ITEM_PATTERN = re.compile(r'(?<=\[\[).*?(?=\]\])')
 QUERY = "SELECT page_title FROM page WHERE page_namespace = 0 AND page_is_redirect = 0 AND page_id NOT IN (SELECT cl_from FROM categorylinks WHERE cl_to IN ('All_disambiguation_pages', 'Pages_with_short_description', 'Articles_with_short_description', 'All_redirects_for_discussion')) AND page_title != 'Main_Page'"
 
@@ -69,7 +69,7 @@ def update_page(list):
 
     # Add new entries in place of old ones in table
     new_list = '\n'.join(map(lambda vals: f'| [[{vals[0]}]] || {vals[1]}\n|-', list.items()))
-    page.text = TABLE_PATTERN.sub(new_list, page.text)
+    page.text = TABLE_PATTERN.sub(new_list + '\n', page.text)
 
     page.save('Add data for ' + month + ' ' + year + ' (bot)')
 
