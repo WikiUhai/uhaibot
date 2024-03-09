@@ -16,7 +16,7 @@ list_entries = re.findall(item_pattern, table)
 
 if len(list_entries) > 0:
     in_subst = ', '.join(list(map(lambda x: '%s', list_entries)))
-    query = "SELECT p.page_title, CASE WHEN p.page_id IN (SELECT cl.cl_from FROM categorylinks cl WHERE cl.cl_to IN ('All_disambiguation_pages', 'Pages_with_short_description', 'Articles_with_short_description', 'All_redirects_for_discussion')) OR p.page_is_redirect THEN 1 ELSE 0 END FROM page p WHERE p.page_namespace = 0 AND p.page_title IN (%s);" % in_subst
+    query = "SELECT p.page_title, CASE WHEN p.page_id IN (SELECT cl.cl_from FROM categorylinks cl WHERE cl.cl_to IN ('Redirects_to_Wiktionary', 'All_disambiguation_pages', 'Pages_with_short_description', 'Articles_with_short_description', 'All_redirects_for_discussion')) OR p.page_is_redirect THEN 1 ELSE 0 END FROM page p WHERE p.page_namespace = 0 AND p.page_title IN (%s);" % in_subst
 
     conn = pymysql.connect(
         host=host,
