@@ -4,12 +4,12 @@ import pymysql
 from datetime import datetime, timedelta
 from viewcountreader import ViewCountReader
 
-LIST_NUMBER = 3000
+LIST_NUMBER = 6000
 TO_DATE_PATTERN = re.compile(r'(?<=\{\{#EXPR:)[0-9]+(?=\+)')
 HEADER_PATTERN = re.compile(r'(?<=\=\= ).*?(?= \=\=)')
 TABLE_PATTERN = re.compile(r'(?<=\{\| class\=\"wikitable sortable\" id\=\"pages\"\n! Article !! View count\n\|-\n).*?(?=\|\})', re.DOTALL)
 ITEM_PATTERN = re.compile(r'(?<=\[\[).*?(?=\]\])')
-QUERY = "SELECT page_title FROM page WHERE page_namespace = 0 AND page_is_redirect = 0 AND page_id NOT IN (SELECT cl_from FROM categorylinks WHERE cl_to IN ('Redirects_to_Wiktionary', 'All_disambiguation_pages', 'Pages_with_short_description', 'Articles_with_short_description', 'All_redirects_for_discussion')) AND page_title != 'Main_Page'"
+QUERY = "SELECT p.page_title FROM page p WHERE p.page_namespace = 0 AND p.page_is_redirect = 0 AND p.page_id NOT IN (SELECT cl.cl_from FROM categorylinks cl INNER JOIN linktarget lt ON cl.cl_target_id = lt.lt_id WHERE lt.lt_title IN ('Redirects_to_Wiktionary', 'Redirects_to_Wikimedia_Commons', 'All_disambiguation_pages', 'Pages_with_short_description', 'Articles_with_short_description', 'All_redirects_for_discussion', 'Wikipedia_Office-protected_pages')) AND p.page_title != 'Main_Page'"
 
 DB_HOST = "enwiki.analytics.db.svc.wikimedia.cloud"
 DB_CREDENTIALS = "~/replica.my.cnf"
@@ -17,7 +17,7 @@ DB_CREDENTIALS = "~/replica.my.cnf"
 
 def get_dump_data():
     vcr = ViewCountReader()
-    counts = vcr.run(save=True)
+    counts = vcr.run(save=False)
     return counts
 
 
